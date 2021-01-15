@@ -1,0 +1,82 @@
+---
+title: "TidyTemplate"
+date: 2021-01-15
+output: html_output
+---
+
+
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+pacman::p_load(tidyverse, tidytuesdayR, scales, extrafont)
+
+theme_set(theme_minimal())
+loadfonts(quiet = TRUE)
+
+options(dplyr.summarise.inform = FALSE)
+```
+
+# Load the weekly Data
+
+Dowload the weekly data and make available in the `tt` object.
+
+```{r Load}
+
+tt <- tt_load("2021-01-12")
+
+artworks <- tt$artwork %>% janitor::clean_names()
+artists <- tt$artists %>% janitor::clean_names()
+
+```
+
+```{r warning=FALSE, fig.height=10, fig.width=7}
+artists %>% 
+  filter(!is.na(place_of_birth)) %>% 
+  separate(place_of_birth, into = c("place", "country"), sep = ",") %>% 
+  count(country, sort = TRUE) %>%
+  head(30) %>% 
+  ggplot(aes(n, fct_reorder(country, n))) +
+  geom_col()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
