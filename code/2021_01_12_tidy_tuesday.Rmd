@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 pacman::p_load(tidyverse, tidytuesdayR, scales, extrafont)
 
-theme_set(theme_minimal())
+theme_set(theme_minimal(base_family = "IBM Plex Sans"))
 loadfonts(quiet = TRUE)
 
 options(dplyr.summarise.inform = FALSE)
@@ -43,12 +43,27 @@ artists %>%
 
 
 
+```{r warning=FALSE, fig.height=10, fig.width=7}
+artworks %>% 
+  separate(medium, into = c("m1", "m2"), " on ") %>% 
+  count(m2, sort = TRUE) 
+
+
+# %>% 
+#   head(30) %>% 
+#   ggplot(aes(n, m1)) +
+#   geom_col()
+  
+```
 
 
 
 
 
-
+```{r}
+df <- data.frame(x = c("a", "a b", "a b c", NA))
+df %>% separate(x, c("a", "b"))
+```
 
 
 
