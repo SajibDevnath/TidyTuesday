@@ -2,6 +2,8 @@
 title: "TidyTemplate"
 date: 2021-01-15
 output: html_output
+editor_options: 
+  chunk_output_type: inline
 ---
 
 
@@ -12,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 pacman::p_load(tidyverse, tidytuesdayR, scales, extrafont)
 
-theme_set(theme_minimal(base_family = "IBM Plex Sans"))
+theme_set(theme_minimal(base_family = "IBM Plex Sans SemiBold", base_size = 12))
 loadfonts(quiet = TRUE)
 
 options(dplyr.summarise.inform = FALSE)
@@ -61,32 +63,78 @@ artworks %>%
 
 
 ```{r}
-df <- data.frame(x = c("a", "a b", "a b c", NA))
-df %>% separate(x, c("a", "b"))
+artworks %>% 
+  select(artist, medium) %>% 
+  separate(medium, into = c("material1", "material2"), sep = " on ") %>% 
+  group_by(artist) %>% 
+  count(material1, sort = TRUE) %>% 
+  top_n(artist, n)
+```
+```{r}
+top_ten_artists <- artworks %>% 
+  filter(artist != "British (?) School") %>% 
+  select(artist, medium) %>% 
+  count(artist, sort = TRUE) %>% 
+  head(10) %>% 
+  pull(artist)
+
+```
+
+```{r}
+
+artist_and_material <- artworks %>% 
+  drop_na(medium) %>% 
+  select(artist, medium) %>% 
+  filter(artist %in% top_ten_artists, artist != "British (?) School") %>% 
+  mutate(material = str_remove(medium, "on.*")) %>% 
+  group_by(artist) %>% 
+  count(material, sort = TRUE, name = "total") %>% 
+  ungroup() %>%
+  group_by(artist) %>% 
+  slice_max(order_by = total, n = 3) %>% 
+  drop_na(material) %>% 
+  separate(artist, c("last", "first"), sep = ", ", extra = "drop") %>%
+  mutate(artist_name = paste0(first, " ", last))
+
+artist_and_material
+  
 ```
 
 
+```{r fig.width=10}
+artist_and_material %>% 
+  ggplot(aes(fct_reorder(material, log10(total)), log10(total), fill = material)) +
+  geom_col() +
+  facet_wrap(~ artist_name, scales = "free_y", nrow = 5) +
+  coord_flip() +
+  guides(fill = FALSE)  +
+  scale_fill_viridis_d(option = "plasma") +
+  labs(
+    x = "",
+    y = "",
+    title = "Most Common Mediums Used",
+    subtitle = "by Top Ten Artists in Tate Art Museum",
+    caption = "visualization: @SajibDevnath_"
+  ) + 
+  theme(
+    axis.text.x = element_blank(),
+    panel.grid = element_blank(),
+    strip.text = element_text(size = rel(1.05), face = "bold", hjust = 0, margin = margin(t = .2, b = .6, unit = "lines"), color = "grey20"),
+    plot.margin = margin(1,1,.5,1, "cm"),
+    plot.title = element_text(size = rel(1.7), face = "bold", vjust = 3),
+    plot.subtitle = element_text(size = rel(1.2), face = "bold", vjust = 4, color = "grey30"),
+    plot.caption = element_text(size = rel(0.8), face = "italic", color = "grey50"),
+    plot.background = element_rect(fill = "#fffff0"),
+    axis.text = element_text(color = "grey20")
+  ) 
 
 
+```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```{r}
+ggsave(here::here("plot", "week-2.png"), plot = last_plot(), width = 10, type="cairo", dpi = 600)
+```
 
 
 
